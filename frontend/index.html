@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureCert CA | Panel de Gestión</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #18213f;
+      --line: #2a3767;
+      --text: #edf2ff;
+      --muted: #aab6db;
+      --primary: #5b8cff;
+      --primary-2: #7aa2ff;
+      --success: #21c97a;
+      --danger: #ff5d73;
+      --warning: #ffb648;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #08101f 0%, #101935 100%);
+      color: var(--text);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: rgba(10, 16, 32, 0.92);
+      border-right: 1px solid rgba(255,255,255,.07);
+      padding: 28px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), #8c6bff);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 800;
+      box-shadow: var(--shadow);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav button {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: .2s ease;
+      font-size: 14px;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: rgba(91, 140, 255, .14);
+      border-color: rgba(122,162,255,.22);
+    }
+
+    .content {
+      padding: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title-wrap h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .title-wrap p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .api-box {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      min-width: 280px;
+    }
+
+    .api-box label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #0d1430;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    textarea { min-height: 110px; resize: vertical; }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(18,25,51,.96), rgba(24,33,63,.96));
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 10px;
+    }
+
+    .section-grid {
+      grid-template-columns: 1.05fr 1.35fr;
+      align-items: start;
+      margin-bottom: 22px;
+    }
+
+    h3 {
+      margin: 0 0 16px;
+      font-size: 19px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      color: white;
+      background: var(--primary);
+    }
+
+    .btn.secondary { background: #34487f; }
+    .btn.success { background: var(--success); }
+    .btn.danger { background: var(--danger); }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th { color: var(--muted); background: rgba(255,255,255,.03); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .Activo { background: rgba(33,201,122,.16); color: #8ef0ba; }
+    .Revocado { background: rgba(255,93,115,.16); color: #ff9cab; }
+    .Expirado { background: rgba(255,182,72,.16); color: #ffd79a; }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      display: none;
+      font-size: 14px;
+    }
+
+    .message.show { display: block; }
+    .message.success { background: rgba(33,201,122,.14); color: #9df3c4; border: 1px solid rgba(33,201,122,.28); }
+    .message.error { background: rgba(255,93,115,.12); color: #ffb2bd; border: 1px solid rgba(255,93,115,.24); }
+
+    .tabs { display: none; }
+    .tabs.active { display: block; }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 760px;
+      line-height: 1.55;
+    }
+
+    .pill {
+      border: 1px solid rgba(122,162,255,.22);
+      background: rgba(91, 140, 255, .12);
+      color: #cfe0ff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1080px) {
+      .stats, .section-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .stats, .section-grid { grid-template-columns: 1fr; }
+      .topbar, .hero { flex-direction: column; align-items: stretch; }
+      .content { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">CA</div>
+        <div>
+          <h1>SecureCert CA</h1>
+          <p>Gestión profesional de certificados</p>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="users">👥 Usuarios</button>
+        <button class="tab-btn" data-tab="certs">🔐 Certificados</button>
+        <button class="tab-btn" data-tab="validate">✅ Validación</button>
+        <button class="tab-btn" data-tab="logs">🧾 Auditoría</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div class="title-wrap">
+          <h2>Panel de Autoridad Certificadora</h2>
+          <p>Prototipo funcional para el ciclo de vida de certificados digitales.</p>
+        </div>
+        <div class="api-box">
+          <label for="apiBase">URL base de la API</label>
+          <input id="apiBase" value="http://127.0.0.1:8000/api" />
+        </div>
+      </div>
+
+      <section id="dashboard" class="tabs active">
+        <div class="hero card">
+          <div>
+            <h3>Estado general del sistema</h3>
+            <p>Este panel permite registrar entidades, emitir certificados autofirmados, validar autenticidad, revocar certificados y revisar los logs de auditoría generados por el backend.</p>
+          </div>
+          <div class="pill">PKI · Django REST · Frontend responsivo</div>
+        </div>
+
+        <div class="grid stats">
+          <div class="card"><div class="stat-label">Usuarios registrados</div><div class="stat-value" id="statUsers">0</div></div>
+          <div class="card"><div class="stat-label">Certificados activos</div><div class="stat-value" id="statActive">0</div></div>
+          <div class="card"><div class="stat-label">Certificados revocados</div><div class="stat-value" id="statRevoked">0</div></div>
+          <div class="card"><div class="stat-label">Eventos de auditoría</div><div class="stat-value" id="statLogs">0</div></div>
+        </div>
+
+        <div class="grid section-grid">
+          <div class="card">
+            <h3>Resumen de cumplimiento</h3>
+            <p>El prototipo cubre registro de usuarios, emisión y validación de certificados, revocación, almacenamiento lógico y trazabilidad mediante logs.</p>
+            <div class="actions">
+              <button class="btn" onclick="loadAllData()">Actualizar panel</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Recomendaciones de demostración</h3>
+            <p>Para la sustentación, registra un usuario, emite un certificado, valídalo subiendo el archivo `.crt`, revócalo y muestra cómo el log registra cada acción crítica del sistema.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="users" class="tabs">
+        <div class="grid section-grid">
+          <div class="card">
+            <h3>Registrar entidad</h3>
+            <input id="userName" placeholder="Nombre completo" />
+            <br /><br />
+            <input id="userEmail" type="email" placeholder="Correo electrónico" />
+            <br /><br />
+            <input id="userCompany" placeholder="Empresa o dependencia" />
+            <div class="actions">
+              <button class="btn success" onclick="createUser()">Guardar usuario</button>
+            </div>
+            <div id="userMessage" class="message"></div>
+          </div>
+          <div class="card">
+            <h3>Usuarios registrados</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Empresa</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="certs" class="tabs">
+        <div class="grid section-grid">
+          <div class="card">
+            <h3>Emitir certificado</h3>
+            <select id="certUser"></select>
+            <div class="actions">
+              <button class="btn success" onclick="createCertificate()">Generar certificado</button>
+            </div>
+            <hr style="border-color: rgba(255,255,255,.08); margin: 22px 0;" />
+            <h3>Revocar certificado</h3>
+            <input id="revokeSerial" placeholder="Número serial" />
+            <div class="actions">
+              <button class="btn danger" onclick="revokeCertificate()">Revocar</button>
+            </div>
+            <div id="certMessage" class="message"></div>
+          </div>
+          <div class="card">
+            <h3>Listado de certificados</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Serial</th>
+                    <th>Usuario</th>
+                    <th>Emisión</th>
+                    <th>Expiración</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="certsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="validate" class="tabs">
+        <div class="grid section-grid">
+          <div class="card">
+            <h3>Validar certificado</h3>
+            <input id="certFile" type="file" accept=".crt,.pem" />
+            <div class="actions">
+              <button class="btn" onclick="validateCertificate()">Validar archivo</button>
+            </div>
+            <div id="validateMessage" class="message"></div>
+          </div>
+          <div class="card">
+            <h3>Uso recomendado</h3>
+            <p>Selecciona un archivo `.crt` generado por el sistema. El backend evaluará su autenticidad y devolverá un mensaje de validación, lo que te permite demostrar uno de los requisitos principales de la propuesta.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="logs" class="tabs">
+        <div class="card">
+          <h3>Auditoría del sistema</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Acción</th>
+                  <th>Descripción</th>
+                  <th>Responsable</th>
+                </tr>
+              </thead>
+              <tbody id="logsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const qs = (id) => document.getElementById(id);
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tabs').forEach(tab => tab.classList.remove('active'));
+        btn.classList.add('active');
+        qs(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    function api(path) {
+      return `${qs('apiBase').value.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+    }
+
+    function showMessage(id, text, type='success') {
+      const box = qs(id);
+      box.textContent = text;
+      box.className = `message show ${type}`;
+      setTimeout(() => box.className = 'message', 5000);
+    }
+
+    async function fetchJSON(path, options={}) {
+      const res = await fetch(api(path), options);
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? await res.json() : await res.text();
+      if (!res.ok) {
+        const msg = typeof data === 'object' ? JSON.stringify(data) : data;
+        throw new Error(msg || 'Error en la solicitud');
+      }
+      return data;
+    }
+
+    function fmtDate(value) {
+      if (!value) return '—';
+      return new Date(value).toLocaleString('es-CO');
+    }
+
+    async function loadUsers() {
+      const users = await fetchJSON('users/');
+      qs('usersTable').innerHTML = users.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.nombre}</td>
+          <td>${u.correo}</td>
+          <td>${u.empresa || '—'}</td>
+        </tr>
+      `).join('');
+
+      qs('certUser').innerHTML = users.length
+        ? users.map(u => `<option value="${u.id}">${u.nombre} · ${u.correo}</option>`).join('')
+        : '<option value="">No hay usuarios registrados</option>';
+
+      qs('statUsers').textContent = users.length;
+      return users;
+    }
+
+    async function loadCertificates() {
+      const certs = await fetchJSON('certificates/');
+      qs('certsTable').innerHTML = certs.map(c => `
+        <tr>
+          <td>${c.serial}</td>
+          <td>${c.usuario_nombre || c.usuario}</td>
+          <td>${fmtDate(c.fecha_emision)}</td>
+          <td>${fmtDate(c.fecha_expiracion)}</td>
+          <td><span class="badge ${c.estado}">${c.estado}</span></td>
+        </tr>
+      `).join('');
+
+      qs('statActive').textContent = certs.filter(c => c.estado === 'Activo').length;
+      qs('statRevoked').textContent = certs.filter(c => c.estado === 'Revocado').length;
+      return certs;
+    }
+
+    async function loadLogs() {
+      const logs = await fetchJSON('logs/');
+      qs('logsTable').innerHTML = logs.map(l => `
+        <tr>
+          <td>${fmtDate(l.fecha)}</td>
+          <td>${l.accion}</td>
+          <td>${l.descripcion}</td>
+          <td>${l.usuario_responsable || 'Sistema'}</td>
+        </tr>
+      `).join('');
+      qs('statLogs').textContent = logs.length;
+      return logs;
+    }
+
+    async function loadAllData() {
+      try {
+        await Promise.all([loadUsers(), loadCertificates(), loadLogs()]);
+      } catch (error) {
+        alert('No se pudo conectar con la API. Verifica que Django esté ejecutándose en la URL indicada.\n\nDetalle: ' + error.message);
+      }
+    }
+
+    async function createUser() {
+      try {
+        const payload = {
+          nombre: qs('userName').value.trim(),
+          correo: qs('userEmail').value.trim(),
+          empresa: qs('userCompany').value.trim(),
+        };
+        await fetchJSON('users/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        qs('userName').value = '';
+        qs('userEmail').value = '';
+        qs('userCompany').value = '';
+        showMessage('userMessage', 'Usuario registrado correctamente.');
+        await loadAllData();
+      } catch (error) {
+        showMessage('userMessage', 'Error al registrar usuario: ' + error.message, 'error');
+      }
+    }
+
+    async function createCertificate() {
+      try {
+        const usuario_id = qs('certUser').value;
+        await fetchJSON('certificates/create_cert/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario_id })
+        });
+        showMessage('certMessage', 'Certificado emitido correctamente.');
+        await loadAllData();
+      } catch (error) {
+        showMessage('certMessage', 'Error al emitir certificado: ' + error.message, 'error');
+      }
+    }
+
+    async function revokeCertificate() {
+      try {
+        const serial = qs('revokeSerial').value.trim();
+        await fetchJSON('certificates/revoke/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ serial })
+        });
+        qs('revokeSerial').value = '';
+        showMessage('certMessage', 'Certificado revocado correctamente.');
+        await loadAllData();
+      } catch (error) {
+        showMessage('certMessage', 'Error al revocar certificado: ' + error.message, 'error');
+      }
+    }
+
+    async function validateCertificate() {
+      try {
+        const file = qs('certFile').files[0];
+        if (!file) {
+          showMessage('validateMessage', 'Selecciona un archivo .crt o .pem.', 'error');
+          return;
+        }
+        const formData = new FormData();
+        formData.append('certificado', file);
+        const result = await fetchJSON('certificates/validate/', {
+          method: 'POST',
+          body: formData
+        });
+        showMessage('validateMessage', `${result.valido ? 'Válido' : 'Inválido'}: ${result.mensaje}`, result.valido ? 'success' : 'error');
+        await loadLogs();
+      } catch (error) {
+        showMessage('validateMessage', 'Error al validar certificado: ' + error.message, 'error');
+      }
+    }
+
+    loadAllData();
+  </script>
+</body>
+</html>
